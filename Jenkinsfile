@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "manojkrishnappa/recommendationservice:${GIT_COMMIT}"
+        IMAGE_NAME = "aabathorat22/recommendationservice:${GIT_COMMIT}"
     }
 
     stages {
@@ -48,28 +48,27 @@ pipeline {
                     passwordVariable: 'GIT_PASSWORD'
                 )]) {
                     sh '''
-                        if [ -d "gitops" ]; then
-                            echo "gitops directory exists. Removing it..."
-                            rm -rf gitops
-                        fi
-                        git clone https://$GIT_USERNAME:$GIT_PASSWORD@github.com/QuntamVector/GitOps.git gitops
-                        cd gitops/base/recommendationservice/
+                if [ -d "GitOps" ]; then
+                    rm -rf GitOps
+                fi
 
-                        git config user.email "jenkins@ci.com"
-                        git config user.name "jenkins"
+                git clone https://$GIT_USERNAME:$GIT_PASSWORD@github.com/aabathorat11/GitOps.git
+                cd GitOps/base/authservice/
 
-                        # Update image tag
-                        sed -i "s|image: .*recommendationservice.*|image: ${IMAGE_NAME}|g" deployment.yaml
+                git config user.email "jenkins@ci.com"
+                git config user.name "jenkins"
 
-                        git add .
-                        git commit -m "Update recommendationservice image to ${IMAGE_NAME}"
-                        git push origin main
-                    '''
-                }
-            }
+                sed -i -E "s|(image:\\s*).*/authservice:.*|\\1${IMAGE_NAME}|g" deployment.yaml
+
+                git add deployment.yaml
+                git diff --cached --quiet || git commit -m "Update authservice image to ${IMAGE_NAME}"
+                git push origin main
+            '''
         }
-
     }
+}
+    }
+
 
     post {
         always {
